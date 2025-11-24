@@ -37,5 +37,9 @@ public class SubCategoryController {
     public BaseResponse updateCategory(@PathVariable Long id, @RequestBody SubCategoryDto subCategoryDto) {
         return subCategoryService.updateSubCategory(id, subCategoryDto);
     }
-    
+
+    @DeleteMapping("/admin/sub-categories/{id}")
+    public BaseResponse deleteSubCategory(@PathVariable Long id) {
+        return subCategoryService.deleteSubCategory(id);
+    }
 }

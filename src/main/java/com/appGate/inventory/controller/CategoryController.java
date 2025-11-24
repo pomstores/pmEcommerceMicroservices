@@ -35,4 +35,9 @@ public class CategoryController {
     public BaseResponse updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
         return categoryService.updateCategory(id, categoryDto);
     }
+
+    @DeleteMapping("/admin/categories/{id}")
+    public BaseResponse deleteCategory(@PathVariable Long id) {
+        return categoryService.deleteCategory(id);
+    }
 }

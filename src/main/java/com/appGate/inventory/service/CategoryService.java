@@ -61,4 +61,10 @@ public class CategoryService {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid id"));
     }
+
+    public BaseResponse deleteCategory(Long id) {
+        Category category = getOneCategory(id);
+        categoryRepository.delete(category);
+        return new BaseResponse(HttpStatus.OK.value(), "successful", "Category deleted");
+    }
 }

@@ -13,12 +13,20 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -236,5 +244,121 @@ public class CustomerService {
     
     public BaseResponse getAllSuspendedCustomers(boolean suspended) {
         return new BaseResponse(HttpStatus.OK.value(), "successful", customerRepository.findBySuspended(suspended));
+    }
+
+    public BaseResponse getCustomerReportByType(String customerType, String startDate, String endDate,
+                                                 String sortBy, int page, int size) {
+        try {
+            CustomerTypeEnum type = CustomerTypeEnum.valueOf(customerType);
+            Specification<Customer> spec = Specification.where(hasCustomerType(type));
+
+            // Add date range filter if provided
+            if (startDate != null && endDate != null) {
+                LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
+                LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
+                spec = spec.and(createdBetween(start, end));
+            }
+
+            // Determine sort field
+            Sort sort = getSort(sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Page<Customer> customers = customerRepository.findAll(spec, pageable);
+            return new BaseResponse(HttpStatus.OK.value(), "successful", customers);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer type: " + customerType);
+        }
+    }
+
+    public BaseResponse getSuspendedCustomerReportByType(String customerType, String startDate, String endDate,
+                                                          String sortBy, int page, int size) {
+        try {
+            CustomerTypeEnum type = CustomerTypeEnum.valueOf(customerType);
+            Specification<Customer> spec = Specification.where(hasCustomerType(type))
+                    .and(isSuspended(true));
+
+            // Add date range filter if provided
+            if (startDate != null && endDate != null) {
+                LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
+                LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
+                spec = spec.and(createdBetween(start, end));
+            }
+
+            // Determine sort field
+            Sort sort = getSort(sortBy);
+            Pageable pageable = PageRequest.of(page, size, sort);
+
+            Page<Customer> customers = customerRepository.findAll(spec, pageable);
+            return new BaseResponse(HttpStatus.OK.value(), "successful", customers);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer type: " + customerType);
+        }
+    }
+
+    public BaseResponse searchCustomers(String query, String customerType, String status, int page, int size) {
+        Specification<Customer> spec = Specification.where(null);
+
+        // Add search query filter
+        if (query != null && !query.trim().isEmpty()) {
+            spec = spec.and(searchByQuery(query.trim()));
+        }
+
+        // Add customer type filter
+        if (customerType != null && !customerType.trim().isEmpty()) {
+            try {
+                CustomerTypeEnum type = CustomerTypeEnum.valueOf(customerType);
+                spec = spec.and(hasCustomerType(type));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid customer type: " + customerType);
+            }
+        }
+
+        // Add status filter
+        if (status != null && !status.trim().isEmpty()) {
+            boolean isSuspended = "suspended".equalsIgnoreCase(status);
+            spec = spec.and(isSuspended(isSuspended));
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Customer> customers = customerRepository.findAll(spec, pageable);
+
+        return new BaseResponse(HttpStatus.OK.value(), "successful", customers);
+    }
+
+    // Specification helper methods
+    private Specification<Customer> hasCustomerType(CustomerTypeEnum type) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("customerType"), type);
+    }
+
+    private Specification<Customer> isSuspended(boolean suspended) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("suspended"), suspended);
+    }
+
+    private Specification<Customer> createdBetween(LocalDateTime start, LocalDateTime end) {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("createdAt"), start, end);
+    }
+
+    private Specification<Customer> searchByQuery(String query) {
+        return (root, criteriaQuery, criteriaBuilder) -> {
+            String likeQuery = "%" + query.toLowerCase() + "%";
+            return criteriaBuilder.or(
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("accountNumber")), likeQuery),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), likeQuery),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), likeQuery),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("surname")), likeQuery),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("phoneNumber")), likeQuery)
+            );
+        };
+    }
+
+    private Sort getSort(String sortBy) {
+        return switch (sortBy.toLowerCase()) {
+            case "accountnumber" -> Sort.by("accountNumber").ascending();
+            case "name" -> Sort.by("firstName").ascending().and(Sort.by("surname").ascending());
+            default -> Sort.by("createdAt").descending();
+        };
     }
 }

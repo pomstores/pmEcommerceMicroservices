@@ -89,4 +89,9 @@ public class SubCategoryService {
         return new BaseResponse(HttpStatus.OK.value(), "successful", products);
     }
 
+    public BaseResponse deleteSubCategory(Long id) {
+        SubCategory subCategory = getOneSubCategory(id);
+        subCategoryRepository.delete(subCategory);
+        return new BaseResponse(HttpStatus.OK.value(), "successful", "SubCategory deleted");
+    }
 }

@@ -78,4 +78,54 @@ public class CustomerController {
         return customerService.getAllSuspendedCustomers(false);
     }
 
+    @GetMapping(value = "/admin/customers/online/report")
+    public BaseResponse getOnlineCustomerReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return customerService.getCustomerReportByType("ONLINE", startDate, endDate, sortBy, page, size);
+    }
+
+    @GetMapping(value = "/admin/customers/walk-in/report")
+    public BaseResponse getWalkInCustomerReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return customerService.getCustomerReportByType("WALKIN", startDate, endDate, sortBy, page, size);
+    }
+
+    @GetMapping(value = "/admin/customers/online/suspended/report")
+    public BaseResponse getSuspendedOnlineCustomerReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return customerService.getSuspendedCustomerReportByType("ONLINE", startDate, endDate, sortBy, page, size);
+    }
+
+    @GetMapping(value = "/admin/customers/walk-in/suspended/report")
+    public BaseResponse getSuspendedWalkInCustomerReport(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return customerService.getSuspendedCustomerReportByType("WALKIN", startDate, endDate, sortBy, page, size);
+    }
+
+    @GetMapping(value = "/admin/customers/search")
+    public BaseResponse searchCustomers(
+            @RequestParam String query,
+            @RequestParam(required = false) String customerType,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return customerService.searchCustomers(query, customerType, status, page, size);
+    }
+
 }
