@@ -9,6 +9,8 @@ import com.appGate.account.models.Wallet;
 import com.appGate.account.repository.TransactionRepository;
 import com.appGate.account.repository.WalletRepository;
 import com.appGate.account.response.BaseResponse;
+import com.appGate.rbac.models.User;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.appGate.rbac.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -29,6 +33,8 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final PaymentGatewayService paymentGatewayService;
+    private final com.appGate.rbac.repository.UserRepository userRepository;
 
     @Transactional
     public BaseResponse createWallet(Long userId) {
@@ -54,6 +60,13 @@ public class WalletService {
                 .data(savedWallet)
                 .build();
     }
+
+    private Double getUserWalletBalance(Long userId) {
+        return walletRepository.findByUserId(userId)
+                .map(Wallet::getBalance)
+                .orElse(0.0);
+    }
+
 
     public BaseResponse getWalletBalance(Long userId) {
         return walletRepository.findByUserId(userId)
@@ -197,10 +210,64 @@ public class WalletService {
     }
 
     public BaseResponse addMoney(AddMoneyDto dto) {
-        // This would integrate with payment gateway to add money
-        // For now, directly credit the wallet
-        return creditWallet(dto.getUserId(), dto.getAmount(), "ADDED");
+        // Initialize payment through Paystack
+        // User will be redirected to Paystack to complete payment
+        // After payment success, wallet will be credited via webhook or verification
+
+        // Get user email from database
+        com.appGate.rbac.models.User user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + dto.getUserId()));
+
+        return paymentGatewayService.initializeWalletFunding(
+                dto.getUserId(),
+                dto.getAmount(),
+                user.getEmail(),
+                dto.getCallbackUrl()
+        );
     }
+
+    @Transactional
+    public BaseResponse verifyAndFundWallet(String paymentReference) {
+        try {
+            // Verify payment with Paystack
+            BaseResponse paymentVerification = paymentGatewayService.verifyPayment(paymentReference);
+
+            if (paymentVerification.getStatus() == HttpStatus.OK.value()) {
+                // Extract payment details from verification response
+                Map<String, Object> paymentData = (Map<String, Object>) paymentVerification.getData();
+
+                if (paymentData.get("status").toString().equals("COMPLETED")) {
+                    Long userId = ((Number) paymentData.get("userId")).longValue();
+                    Double amount = ((Number) paymentData.get("amount")).doubleValue();
+
+                    // Credit wallet
+                    creditWallet(userId, amount, "Wallet funded via Paystack - Ref: " + paymentReference);
+
+                    return BaseResponse.builder()
+                            .status(HttpStatus.OK.value())
+                            .message("Wallet funded successfully")
+                            .data(Map.of(
+                                    "paymentReference", paymentReference,
+                                    "amount", amount,
+                                    "walletBalance", getUserWalletBalance(userId)
+                            ))
+                            .build();
+                }
+            }
+
+            return BaseResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Payment verification failed")
+                    .build();
+
+        } catch (Exception e) {
+            return BaseResponse.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Wallet funding verification error: " + e.getMessage())
+                    .build();
+        }
+    }
+
 
     public BaseResponse getTransactionHistory(Long userId, int page, int size) {
         try {

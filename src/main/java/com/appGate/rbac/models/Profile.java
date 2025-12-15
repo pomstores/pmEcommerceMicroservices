@@ -3,6 +3,7 @@ package com.appGate.rbac.models;
 import com.appGate.rbac.enums.GenderEnum;
 import com.appGate.rbac.enums.MaritalStatusEnum;
 import com.appGate.rbac.enums.EmploymentTypeEnum;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "profile")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "state", "lga", "ward", "user", "utilityBill"})
 public class Profile {
 
     @Id
@@ -41,11 +43,18 @@ public class Profile {
     @Column(name = "home_address")
     private String homeAddress;
 
-    @Column(name = "city")
-    private String city;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id", referencedColumnName = "id")
+    private State state;
 
-    @Column(name = "stateOfOrigin")
-    private String stateOfOrigin;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lga_id", referencedColumnName = "id")
+    private LGA lga;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_id", referencedColumnName = "id")
+    private Ward ward;
+
 
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;

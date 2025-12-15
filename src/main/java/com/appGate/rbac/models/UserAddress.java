@@ -1,5 +1,6 @@
 package com.appGate.rbac.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "state", "lga", "ward"})
 public class UserAddress {
 
     @Id
@@ -26,6 +28,18 @@ public class UserAddress {
 
     @Column(name = "address", length = 500)
     private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id", referencedColumnName = "id")
+    private State state;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lga_id", referencedColumnName = "id")
+    private LGA lga;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_id", referencedColumnName = "id")
+    private Ward ward;
 
     @Column(name = "is_default")
     private Boolean isDefault = false;

@@ -7,5 +7,8 @@ public class UpdateUserDto {
     private String firstName;
     private String lastName;
     private String address;
-    private String phoneNumber;    
+    private Long stateId;
+    private Long lgaId;
+    private Long wardId;
+    private String phoneNumber;
 }

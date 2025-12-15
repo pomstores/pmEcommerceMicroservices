@@ -16,6 +16,8 @@ public class Rider extends BaseEntity{
     private  String otherName;
     @Column(name = "email", unique = true)
     private  String email;
+    @Column(name = "password")
+    private  String password;
     @Column(name = "phone_number", unique = true)
     private   String phoneNumber;
     @Enumerated(EnumType.STRING)

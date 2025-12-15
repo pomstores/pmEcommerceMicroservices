@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 import java.time.LocalDateTime;
 
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "bvnNumber", "ninNumber" })
 public class UserVerification extends BaseEntity {
 
     @Id
@@ -62,4 +65,56 @@ public class UserVerification extends BaseEntity {
 
     @Column(name = "retry_count")
     private Integer retryCount = 0;
+
+    
+    @Column(name = "personal_verification")
+    private Boolean personalVerification = false;
+
+    @Column(name = "personal_verification_date")
+    private LocalDateTime personalVerificationDate;
+
+    @Column(name = "employment_verified")
+    private Boolean employmentVerified = false;
+
+    @Column(name = "employment_verification_date")
+    private LocalDateTime employmentVerificationDate;
+
+    @Column(name = "bvn_verified")
+    private Boolean bvnVerified = false;
+
+    @Column(name = "bvn_verification_date")
+    private LocalDateTime bvnVerificationDate;
+
+    @Column(name = "bvn_number")
+    private String bvnNumber;
+
+    @Column(name = "nin_verified")
+    private Boolean ninVerified = false;
+
+    @Column(name = "nin_verification_date")
+    private LocalDateTime ninVerificationDate;
+
+    @Column(name = "nin_number")
+    private String ninNumber;
+
+    @Column(name = "bank_account_verified")
+    private Boolean bankAccountVerified = false;
+
+    @Column(name = "bank_account_verification_date")
+    private LocalDateTime bankAccountVerificationDate;
+
+    @Column(name = "payment_card_verified")
+    private Boolean paymentCardVerified = false;
+
+    @Column(name = "payment_card_verification_date")
+    private LocalDateTime paymentCardVerificationDate;
+
+    @Column(name = "terms_accepted")
+    private Boolean termsAccepted = false;
+
+    @Column(name = "terms_acceptance_date")
+    private LocalDateTime termsAcceptanceDate;
+
+    @Column(name = "terms_version")
+    private String termsVersion;
 }

@@ -4,5 +4,4 @@ public enum MaritalStatusEnum {
     SINGLE,
     MARRIED,
     DIVORCED
-    
 }

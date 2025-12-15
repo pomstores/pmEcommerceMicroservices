@@ -8,6 +8,12 @@ import com.appGate.client.models.Customer;
 import com.appGate.client.repository.CustomerRepository;
 import com.appGate.client.response.BaseResponse;
 import com.appGate.client.util.FileUploadUtil;
+import com.appGate.rbac.models.State;
+import com.appGate.rbac.models.LGA;
+import com.appGate.rbac.models.Ward;
+import com.appGate.rbac.repository.StateRepository;
+import com.appGate.rbac.repository.LGARepository;
+import com.appGate.rbac.repository.WardRepository;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,9 +43,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final StateRepository stateRepository;
+    private final LGARepository lgaRepository;
+    private final WardRepository wardRepository;
 
-    public CustomerService(CustomerRepository customerRepository) {
+    public CustomerService(CustomerRepository customerRepository, StateRepository stateRepository,
+                          LGARepository lgaRepository, WardRepository wardRepository) {
         this.customerRepository = customerRepository;
+        this.stateRepository = stateRepository;
+        this.lgaRepository = lgaRepository;
+        this.wardRepository = wardRepository;
     }
 
     public BaseResponse createWalkinCustomer(CustomerDto customerDto, HttpServletRequest request) {
@@ -92,7 +105,7 @@ public class CustomerService {
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, "error", e);
         }
 
-        fileSavedPath = baseUrl + "/api/users/customer/image/" + fileSavedPath;
+        fileSavedPath = baseUrl + "/api/users/customer-image/" + fileSavedPath;
 
         System.out.println("fileSavedPath " + fileSavedPath);
         System.out.println("baseUrl " + baseUrl);
@@ -113,10 +126,62 @@ public class CustomerService {
         customer.setNationality(customerDto.getNationality());
         customer.setNin(customerDto.getNin());
         customer.setBvn(customerDto.getBvn());
+
+        // Contact address
         customer.setContactAddress(customerDto.getContactAddress());
+        if (customerDto.getContactStateId() != null) {
+            State state = stateRepository.findById(customerDto.getContactStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact State not found"));
+            customer.setContactState(state);
+        }
+        if (customerDto.getContactLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getContactLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact LGA not found"));
+            customer.setContactLga(lga);
+        }
+        if (customerDto.getContactWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getContactWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact Ward not found"));
+            customer.setContactWard(ward);
+        }
+
+        // Office address
         customer.setOfficeAddress(customerDto.getOfficeAddress());
+        if (customerDto.getOfficeStateId() != null) {
+            State state = stateRepository.findById(customerDto.getOfficeStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office State not found"));
+            customer.setOfficeState(state);
+        }
+        if (customerDto.getOfficeLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getOfficeLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office LGA not found"));
+            customer.setOfficeLga(lga);
+        }
+        if (customerDto.getOfficeWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getOfficeWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office Ward not found"));
+            customer.setOfficeWard(ward);
+        }
+
+        // Next of kin address
         customer.setNextOfKin(customerDto.getNextOfKin());
         customer.setNextOfKinAddress(customerDto.getNextOfKinAddress());
+        if (customerDto.getNextOfKinStateId() != null) {
+            State state = stateRepository.findById(customerDto.getNextOfKinStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin State not found"));
+            customer.setNextOfKinState(state);
+        }
+        if (customerDto.getNextOfKinLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getNextOfKinLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin LGA not found"));
+            customer.setNextOfKinLga(lga);
+        }
+        if (customerDto.getNextOfKinWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getNextOfKinWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin Ward not found"));
+            customer.setNextOfKinWard(ward);
+        }
+
         customer.setPassport(saveImage(customerDto.getPassport(), "customer", baseUrl));
         customer.setSignature(saveImage(customerDto.getSignature(), "customer", baseUrl));
         customer.setGender(customerDto.getGender());
@@ -136,10 +201,62 @@ public class CustomerService {
         customer.setNationality(customerDto.getNationality());
         customer.setNin(customerDto.getNin());
         customer.setBvn(customerDto.getBvn());
+
+        // Contact address
         customer.setContactAddress(customerDto.getContactAddress());
+        if (customerDto.getContactStateId() != null) {
+            State state = stateRepository.findById(customerDto.getContactStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact State not found"));
+            customer.setContactState(state);
+        }
+        if (customerDto.getContactLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getContactLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact LGA not found"));
+            customer.setContactLga(lga);
+        }
+        if (customerDto.getContactWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getContactWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact Ward not found"));
+            customer.setContactWard(ward);
+        }
+
+        // Office address
         customer.setOfficeAddress(customerDto.getOfficeAddress());
+        if (customerDto.getOfficeStateId() != null) {
+            State state = stateRepository.findById(customerDto.getOfficeStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office State not found"));
+            customer.setOfficeState(state);
+        }
+        if (customerDto.getOfficeLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getOfficeLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office LGA not found"));
+            customer.setOfficeLga(lga);
+        }
+        if (customerDto.getOfficeWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getOfficeWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Office Ward not found"));
+            customer.setOfficeWard(ward);
+        }
+
+        // Next of kin address
         customer.setNextOfKin(customerDto.getNextOfKin());
         customer.setNextOfKinAddress(customerDto.getNextOfKinAddress());
+        if (customerDto.getNextOfKinStateId() != null) {
+            State state = stateRepository.findById(customerDto.getNextOfKinStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin State not found"));
+            customer.setNextOfKinState(state);
+        }
+        if (customerDto.getNextOfKinLgaId() != null) {
+            LGA lga = lgaRepository.findById(customerDto.getNextOfKinLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin LGA not found"));
+            customer.setNextOfKinLga(lga);
+        }
+        if (customerDto.getNextOfKinWardId() != null) {
+            Ward ward = wardRepository.findById(customerDto.getNextOfKinWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Next of Kin Ward not found"));
+            customer.setNextOfKinWard(ward);
+        }
+
         customer.setGender(customerDto.getGender());
     }
 

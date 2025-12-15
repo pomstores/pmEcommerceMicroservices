@@ -3,6 +3,7 @@ package com.appGate.orderingsales.models;
 import com.appGate.orderingsales.enums.DeliveryStatus;
 import com.appGate.orderingsales.enums.OrderStatus;
 import com.appGate.orderingsales.enums.PaymentType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "deliveryState", "deliveryLga", "deliveryWard"})
 public class Order extends BaseEntity {
 
     @Id
@@ -77,11 +79,17 @@ public class Order extends BaseEntity {
     @Column(name = "delivery_address", length = 500)
     private String deliveryAddress;
 
-    @Column(name = "delivery_city")
-    private String deliveryCity;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_state_id", referencedColumnName = "id")
+    private com.appGate.rbac.models.State deliveryState;
 
-    @Column(name = "delivery_state")
-    private String deliveryState;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_lga_id", referencedColumnName = "id")
+    private com.appGate.rbac.models.LGA deliveryLga;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_ward_id", referencedColumnName = "id")
+    private com.appGate.rbac.models.Ward deliveryWard;
 
     @Column(name = "delivery_country")
     private String deliveryCountry = "Nigeria";

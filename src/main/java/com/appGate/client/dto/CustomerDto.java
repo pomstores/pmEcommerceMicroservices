@@ -20,9 +20,18 @@ public class CustomerDto {
     private String nin;
     private String bvn;
     private String contactAddress;
+    private Long contactStateId;
+    private Long contactLgaId;
+    private Long contactWardId;
     private String officeAddress;
+    private Long officeStateId;
+    private Long officeLgaId;
+    private Long officeWardId;
     private String nextOfKin;
     private String nextOfKinAddress;
+    private Long nextOfKinStateId;
+    private Long nextOfKinLgaId;
+    private Long nextOfKinWardId;
     @Nullable
     private MultipartFile passport;
     @Nullable

@@ -9,7 +9,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "users")
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "password", "resetOtp" })
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "password", "resetOtp", "state", "lga", "ward" })
 public class User extends BaseEntity {
 
     @Id
@@ -30,6 +30,18 @@ public class User extends BaseEntity {
 
     @Column(name = "address")
     private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "state_id", referencedColumnName = "id")
+    private State state;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "lga_id", referencedColumnName = "id")
+    private LGA lga;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_id", referencedColumnName = "id")
+    private Ward ward;
 
     @Column(name = "password")
     private String password;

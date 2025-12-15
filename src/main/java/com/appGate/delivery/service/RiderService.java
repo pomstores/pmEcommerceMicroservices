@@ -75,7 +75,7 @@ public class RiderService {
         String fileSavePath = "";
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         try{
-            fileSavePath = FileUploadUtil.uploadImage(heroGallery, FileUploadUtil.generateUniqName(fileName), file);
+            fileSavePath = FileUploadUtil.saveImage(heroGallery, FileUploadUtil.generateUniqName(fileName), file);
         } catch (IOException e){
             throw new ResponseStatusException(HttpStatus.EXPECTATION_FAILED, "error occurred while uploading image", e);
         }

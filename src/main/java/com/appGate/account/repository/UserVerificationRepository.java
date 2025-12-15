@@ -22,4 +22,6 @@ public interface UserVerificationRepository extends JpaRepository<UserVerificati
     Optional<UserVerification> findByVerificationReference(String verificationReference);
 
     boolean existsByUserIdAndVerificationTypeAndStatus(Long userId, VerificationType verificationType, VerificationStatus status);
+
+    boolean existsByUserId(Long userId);
 }

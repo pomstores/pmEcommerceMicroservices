@@ -20,11 +20,14 @@ public class CheckoutDto {
     @Size(max = 500, message = "Address must not exceed 500 characters")
     private String deliveryAddress;
 
-    @NotBlank(message = "City is required")
-    private String deliveryCity;
+    @NotNull(message = "State ID is required")
+    private Long deliveryStateId;
 
-    @NotBlank(message = "State is required")
-    private String deliveryState;
+    @NotNull(message = "LGA ID is required")
+    private Long deliveryLgaId;
+
+    @NotNull(message = "Ward ID is required")
+    private Long deliveryWardId;
 
     private String deliveryCountry = "Nigeria";
 

@@ -11,7 +11,14 @@ import com.appGate.orderingsales.repository.CartRepository;
 import com.appGate.orderingsales.repository.OrderRepository;
 import com.appGate.orderingsales.repository.OrderItemRepository;
 import com.appGate.orderingsales.response.BaseResponse;
+import com.appGate.rbac.models.State;
+import com.appGate.rbac.models.LGA;
+import com.appGate.rbac.models.Ward;
+import com.appGate.rbac.repository.StateRepository;
+import com.appGate.rbac.repository.LGARepository;
+import com.appGate.rbac.repository.WardRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +40,9 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final CartRepository cartRepository;
+    private final StateRepository stateRepository;
+    private final LGARepository lgaRepository;
+    private final WardRepository wardRepository;
 
     @Transactional
     public BaseResponse checkout(CheckoutDto checkoutDto) {
@@ -54,8 +64,26 @@ public class OrderService {
 
             // Set delivery information
             order.setDeliveryAddress(checkoutDto.getDeliveryAddress());
-            order.setDeliveryCity(checkoutDto.getDeliveryCity());
-            order.setDeliveryState(checkoutDto.getDeliveryState());
+
+            // Set delivery location using IDs
+            if (checkoutDto.getDeliveryStateId() != null) {
+                State state = stateRepository.findById(checkoutDto.getDeliveryStateId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery State not found"));
+                order.setDeliveryState(state);
+            }
+
+            if (checkoutDto.getDeliveryLgaId() != null) {
+                LGA lga = lgaRepository.findById(checkoutDto.getDeliveryLgaId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery LGA not found"));
+                order.setDeliveryLga(lga);
+            }
+
+            if (checkoutDto.getDeliveryWardId() != null) {
+                Ward ward = wardRepository.findById(checkoutDto.getDeliveryWardId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery Ward not found"));
+                order.setDeliveryWard(ward);
+            }
+
             order.setDeliveryCountry(checkoutDto.getDeliveryCountry());
             order.setDeliveryPostalCode(checkoutDto.getDeliveryPostalCode());
             order.setDeliveryPhone(checkoutDto.getDeliveryPhone());

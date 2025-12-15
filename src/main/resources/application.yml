@@ -49,6 +49,14 @@ app:
   jwtExpirationMs: 7200000
   jwtCookieName: cmdm
 
+dojah:
+  api:
+    base-url: https://api.dojah.io
+    app-id: mock
+    secret-key: mock
+    timeout: 30000
+    mock-enabled: true  # Set to false when you have real Dojah credentials
+
 logging:
   level:
     org.springframework.security: DEBUG
@@ -85,3 +93,12 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   packagesToScan: com.appGate
+
+
+paystack:
+  secret:
+    Key: sk_test_34bbcec748a106d5f2084b7574aecc871ef5fc26
+  base:
+    url: https://api.paystack.co  
+  public:
+    Key: pk_test_ebad2e3ef9a0186bcfd1bcca5c11fc64625b7946

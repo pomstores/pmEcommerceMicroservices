@@ -9,9 +9,6 @@ import lombok.Data;
 @Data
 public class InitializePaymentDto {
 
-    @NotNull(message = "Order ID is required")
-    private Long orderId;
-
     @NotNull(message = "User ID is required")
     private Long userId;
 
@@ -19,14 +16,6 @@ public class InitializePaymentDto {
     @Min(value = 1, message = "Amount must be greater than 0")
     private Double amount;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Valid email is required")
-    private String email;
-
     @NotBlank(message = "Callback URL is required")
     private String callbackUrl;
-
-    private Boolean isInstallmentPayment = false;
-
-    private Long installmentId;
 }

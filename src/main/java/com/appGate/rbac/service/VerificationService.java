@@ -13,10 +13,16 @@ import com.appGate.rbac.dto.PersonalInformationDto;
 import com.appGate.rbac.models.Profile;
 import com.appGate.rbac.models.User;
 import com.appGate.rbac.models.UtilityBill;
+import com.appGate.rbac.models.State;
+import com.appGate.rbac.models.LGA;
+import com.appGate.rbac.models.Ward;
 import com.appGate.rbac.repository.EmploymentInformationRepository;
 import com.appGate.rbac.repository.ProfileRepository;
 import com.appGate.rbac.repository.UserRepository;
 import com.appGate.rbac.repository.UtilityBIllRepository;
+import com.appGate.rbac.repository.StateRepository;
+import com.appGate.rbac.repository.LGARepository;
+import com.appGate.rbac.repository.WardRepository;
 import com.appGate.rbac.response.BaseResponse;
 import com.appGate.rbac.util.FileUploadUtil;
 
@@ -33,13 +39,20 @@ public class VerificationService {
     private final UserRepository userRepository;
     private final UtilityBIllRepository utilityBillRepository;
     private final EmploymentInformationRepository employmentRepository;
+    private final StateRepository stateRepository;
+    private final LGARepository lgaRepository;
+    private final WardRepository wardRepository;
 
     public VerificationService(ProfileRepository profileRepository, UserRepository userRepository,
-            UtilityBIllRepository utilityBillRepository, EmploymentInformationRepository employmentRepository) {
+            UtilityBIllRepository utilityBillRepository, EmploymentInformationRepository employmentRepository,
+            StateRepository stateRepository, LGARepository lgaRepository, WardRepository wardRepository) {
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
         this.utilityBillRepository = utilityBillRepository;
         this.employmentRepository = employmentRepository;
+        this.stateRepository = stateRepository;
+        this.lgaRepository = lgaRepository;
+        this.wardRepository = wardRepository;
     }
 
     public BaseResponse saveEmploymentInformation(EmploymentInformationDto employmentInfoDto) {
@@ -86,8 +99,7 @@ public class VerificationService {
 
         UtilityBill utilityBill = new UtilityBill();
         utilityBill.setUser(user);
-        utilityBill.setUtilityBillPicture(
-                saveImage(personalInformationDto.getUtilityBillPicture(), "utilityBill", baseUrl));
+        utilityBill.setUtilityBillPicture(saveImage(personalInformationDto.getUtilityBillPicture(), "utilityBill", baseUrl));
         utilityBill.setUtilityBill(personalInformationDto.getUtilityBillType());
         UtilityBill utilityBillSaved = utilityBillRepository.save(utilityBill);
 
@@ -97,8 +109,26 @@ public class VerificationService {
         profile.setEmail(personalInformationDto.getEmail());
         profile.setHomeAddress(personalInformationDto.getHomeAddress());
         profile.setPhoneNumber(personalInformationDto.getPhoneNumber());
-        profile.setCity(personalInformationDto.getCity());
-        profile.setStateOfOrigin(personalInformationDto.getStateOfOrigin());
+
+        // Set state, LGA, ward using IDs
+        if (personalInformationDto.getStateId() != null) {
+            State state = stateRepository.findById(personalInformationDto.getStateId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "State not found"));
+            profile.setState(state);
+        }
+
+        if (personalInformationDto.getLgaId() != null) {
+            LGA lga = lgaRepository.findById(personalInformationDto.getLgaId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LGA not found"));
+            profile.setLga(lga);
+        }
+
+        if (personalInformationDto.getWardId() != null) {
+            Ward ward = wardRepository.findById(personalInformationDto.getWardId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ward not found"));
+            profile.setWard(ward);
+        }
+
         profile.setGender(personalInformationDto.getGender());
         profile.setMaritalStatus(personalInformationDto.getMaritalStatus());
         profile.setDateOfBirth(personalInformationDto.getDateOfBirth());

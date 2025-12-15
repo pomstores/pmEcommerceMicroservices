@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 
 import com.appGate.inventory.dto.ProductDto;
 // import com.appGate.inventory.kafka.PopularProductCache;
-import com.appGate.inventory.kafka.ProductViewEventPublisher;
+// import com.appGate.inventory.kafka.ProductViewEventPublisher;
 import com.appGate.inventory.models.Category;
 import com.appGate.inventory.models.Product;
 import com.appGate.inventory.models.SubCategory;
@@ -46,7 +46,7 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     // private final PopularProductCache popularProductCache;
-    private final ProductViewEventPublisher productViewEventPublisher;
+    // private final ProductViewEventPublisher productViewEventPublisher;
     private final CategoryRepository categoryRepository;
     private final SubCategoryRepository subCategoryRepository;
     private final SupplierRepository supplierRepository;
@@ -56,16 +56,17 @@ public class ProductService {
             CategoryRepository categoryRepository,
             SubCategoryRepository subCategoryRepository,
             SupplierRepository supplierRepository,
-            StockRepository stockRepository,
+            StockRepository stockRepository
             // PopularProductCache popularProductCache,
-            ProductViewEventPublisher productViewEventPublisher) {
+            // ProductViewEventPublisher productViewEventPublisher
+            ) {
         // this.popularProductCache = popularProductCache;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.subCategoryRepository = subCategoryRepository;
         this.supplierRepository = supplierRepository;
         this.stockRepository = stockRepository;
-        this.productViewEventPublisher = productViewEventPublisher;
+        // this.productViewEventPublisher = productViewEventPublisher;
     }
 
     public BaseResponse quickPick() {
@@ -105,7 +106,7 @@ public class ProductService {
 
         Product product = getOneProduct(productId);
 
-        productViewEventPublisher.publishOrderEvent(productId);
+        // productViewEventPublisher.publishOrderEvent(productId);
 
         return new BaseResponse(HttpStatus.OK.value(), "successful", product);
     }
@@ -164,8 +165,40 @@ public class ProductService {
 
         Product product = getOneProduct(productId);
 
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.map(productDto, product);
+        // Manually map fields to avoid ModelMapper conflicts with *Id fields
+        if (productDto.getProductName() != null) {
+            product.setProductName(productDto.getProductName());
+        }
+        if (productDto.getProductDescription() != null) {
+            product.setProductDescription(productDto.getProductDescription());
+        }
+        if (productDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productDto.getCategoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid category id"));
+            product.setCategory(category);
+        }
+        if (productDto.getSubCategoryId() != null) {
+            SubCategory subCategory = subCategoryRepository.findById(productDto.getSubCategoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sub category id"));
+            product.setSubCategory(subCategory);
+        }
+        if (productDto.getSupplierId() != null) {
+            Supplier supplier = supplierRepository.findById(productDto.getSupplierId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid supplier id"));
+            product.setSupplier(supplier);
+        }
+        if (productDto.getSellingPrice() != null) {
+            product.setSellingPrice(productDto.getSellingPrice());
+        }
+        if (productDto.getCostPrice() != null) {
+            product.setCostPrice(productDto.getCostPrice());
+        }
+        if (productDto.getManufacturerName() != null) {
+            product.setManufacturerName(productDto.getManufacturerName());
+        }
+        if (productDto.getQuantity() != null) {
+            product.setQuantity(productDto.getQuantity());
+        }
 
         productRepository.save(product);
 

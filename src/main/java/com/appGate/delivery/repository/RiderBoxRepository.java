@@ -3,6 +3,8 @@ package com.appGate.delivery.repository;
 import com.appGate.delivery.enums.RiderBoxStatusEnum;
 import com.appGate.delivery.models.Rider;
 import com.appGate.delivery.models.RiderBox;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,5 +15,6 @@ public interface RiderBoxRepository extends JpaRepository<RiderBox, Long> {
     // Find a RiderBox by saleRef::
     Optional<RiderBox> findBySaleRef(Long saleRef);
     List<RiderBox> findByRiderIdAndStatus(Long riderId, RiderBoxStatusEnum status);
+    Page<RiderBox> findByRiderIdAndStatus(Long riderId, RiderBoxStatusEnum status, Pageable pageable);
 
 }

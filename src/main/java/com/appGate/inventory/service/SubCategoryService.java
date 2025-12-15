@@ -94,4 +94,10 @@ public class SubCategoryService {
         subCategoryRepository.delete(subCategory);
         return new BaseResponse(HttpStatus.OK.value(), "successful", "SubCategory deleted");
     }
+
+    public BaseResponse getSubCategoriesByCategory(Long categoryId) {
+        List<SubCategory> subCategories = subCategoryRepository.findByCategoryId(categoryId);
+
+        return new BaseResponse(HttpStatus.OK.value(), "successful", subCategories);
+    }
 }

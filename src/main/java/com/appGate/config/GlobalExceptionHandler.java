@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.appGate.account.exception.VerificationException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -44,6 +46,17 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getReason());
 
         return new ResponseEntity<>(response, ex.getStatusCode());
+    }
+
+    @ExceptionHandler(VerificationException.class)
+    public ResponseEntity<Object> handleVerificationException(VerificationException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("message", ex.getMessage());
+        response.put("response", "Verification Failed");
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
 

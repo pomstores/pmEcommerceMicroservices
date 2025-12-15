@@ -42,4 +42,10 @@ public class SubCategoryController {
     public BaseResponse deleteSubCategory(@PathVariable Long id) {
         return subCategoryService.deleteSubCategory(id);
     }
+
+    @GetMapping("/categories/{categoryId}/sub-categories")
+    public BaseResponse getSubCategoriesByCategory(@PathVariable Long categoryId) {
+        return subCategoryService.getSubCategoriesByCategory(categoryId);
+    }
+
 }

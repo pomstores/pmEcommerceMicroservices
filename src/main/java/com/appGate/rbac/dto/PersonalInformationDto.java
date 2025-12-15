@@ -17,7 +17,9 @@ public class PersonalInformationDto {
     private String lastName;
     private String email;
     private String homeAddress;
-    private String city;
+    private Long stateId;
+    private Long lgaId;
+    private Long wardId;
     private String phoneNumber;
     private String stateOfOrigin;
     private String dateOfBirth; 

@@ -14,5 +14,7 @@ public class AddMoneyDto {
     @Min(value = 1, message = "Amount must be greater than 0")
     private Double amount;
 
+    private String callbackUrl; // URL to redirect after payment
+
     private String paymentMethod; // For future use
 }

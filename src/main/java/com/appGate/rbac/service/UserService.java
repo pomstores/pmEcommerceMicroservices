@@ -1,5 +1,6 @@
 package com.appGate.rbac.service;
 
+import com.appGate.account.service.WalletService;
 import com.appGate.email.dto.EmailDto;
 import com.appGate.email.services.EmailService;
 import com.appGate.rbac.dto.UserDto;
@@ -8,11 +9,18 @@ import com.appGate.rbac.dto.ResetPasswordDto;
 import com.appGate.rbac.dto.UpdateUserDto;
 import com.appGate.rbac.enums.RoleEnum;
 import com.appGate.rbac.models.User;
+import com.appGate.rbac.models.State;
+import com.appGate.rbac.models.LGA;
+import com.appGate.rbac.models.Ward;
 import com.appGate.rbac.repository.UserRepository;
+import com.appGate.rbac.repository.StateRepository;
+import com.appGate.rbac.repository.LGARepository;
+import com.appGate.rbac.repository.WardRepository;
 import com.appGate.rbac.request.LoginRequest;
 import com.appGate.rbac.response.BaseResponse;
 import com.appGate.rbac.response.SignInResponse;
 import com.appGate.rbac.util.JwtUtils;
+import com.appGate.account.service.WalletService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,13 +38,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final WalletService walletService;
+    private final StateRepository stateRepository;
+    private final LGARepository lgaRepository;
+    private final WardRepository wardRepository;
+
 
     public UserService(JwtUtils jwtUtils, UserRepository userRepository, PasswordEncoder passwordEncoder,
-            EmailService emailService) {
+            EmailService emailService, WalletService walletService, StateRepository stateRepository,
+            LGARepository lgaRepository, WardRepository wardRepository) {
         this.emailService = emailService;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.walletService = walletService;
+        this.stateRepository = stateRepository;
+        this.lgaRepository = lgaRepository;
+        this.wardRepository = wardRepository;
     }
 
     public String generateTokenFromEmail(String email) {
@@ -64,7 +82,9 @@ public class UserService {
         user.setRole(RoleEnum.USER);
 
         // Save the user to the database
-        userRepository.save(user);
+        User newUser = userRepository.save(user);
+
+        walletService.createWallet(newUser.getId());
 
         // Send welcome email to new user
         EmailDto welcomeEmail = new EmailDto();
@@ -191,16 +211,38 @@ public class UserService {
         Optional<User> user = userRepository.findById(userId);
 
         if (user.isPresent()) {
-            user.get().setFirstName(userDto.getFirstName());
-            user.get().setLastName(userDto.getLastName());
-            user.get().setPhoneNumber(userDto.getPhoneNumber());
+            User existingUser = user.get();
+            existingUser.setFirstName(userDto.getFirstName());
+            existingUser.setLastName(userDto.getLastName());
+            existingUser.setPhoneNumber(userDto.getPhoneNumber());
 
             // Update address if provided
             if (userDto.getAddress() != null) {
-                user.get().setAddress(userDto.getAddress());
+                existingUser.setAddress(userDto.getAddress());
             }
 
-            userRepository.save(user.get());
+            // Update state if provided
+            if (userDto.getStateId() != null) {
+                State state = stateRepository.findById(userDto.getStateId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "State not found"));
+                existingUser.setState(state);
+            }
+
+            // Update LGA if provided
+            if (userDto.getLgaId() != null) {
+                LGA lga = lgaRepository.findById(userDto.getLgaId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "LGA not found"));
+                existingUser.setLga(lga);
+            }
+
+            // Update Ward if provided
+            if (userDto.getWardId() != null) {
+                Ward ward = wardRepository.findById(userDto.getWardId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ward not found"));
+                existingUser.setWard(ward);
+            }
+
+            userRepository.save(existingUser);
         }
 
         return new BaseResponse(HttpStatus.OK.value(), "successful", user);
@@ -259,6 +301,11 @@ public class UserService {
         }
 
         return new BaseResponse(HttpStatus.OK.value(), "successful", "Password changed successfully");
+    }
+
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
     /**

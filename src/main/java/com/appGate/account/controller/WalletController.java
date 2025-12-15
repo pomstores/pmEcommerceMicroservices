@@ -62,4 +62,13 @@ public class WalletController {
             @RequestParam(defaultValue = "20") int size) {
         return walletService.getTransactionHistory(userId, page, size);
     }
+
+    /**
+     * Verify wallet funding payment and credit wallet
+     * GET /api/wallet/verify-funding/{paymentReference}
+     */
+    @GetMapping("/verify-funding/{paymentReference}")
+    public BaseResponse verifyWalletFunding(@PathVariable String paymentReference) {
+        return walletService.verifyAndFundWallet(paymentReference);
+    }
 }

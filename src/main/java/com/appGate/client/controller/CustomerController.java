@@ -38,7 +38,7 @@ public class CustomerController {
         return customerService.getCustomersDetails(customerId);
     }
 
-    @GetMapping(path = "/users/customer/image/**", produces = { MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE })
+    @GetMapping(path = "/users/customer/image/**")
     public ResponseEntity<Resource> downloadImage(HttpServletRequest request) {
         String fullPath = request.getRequestURI().split("/users/customer/image/")[1];
         Resource resource = customerService.loadFileAsResource(fullPath);
